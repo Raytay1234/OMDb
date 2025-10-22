@@ -6,9 +6,8 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const location = useLocation();
 
-  // Close mobile menu when route changes
   useEffect(() => {
-    setOpen(false);
+    setOpen(false); // Close mobile menu on route change
   }, [location.pathname]);
 
   const linkClass = ({ isActive }) =>
@@ -19,37 +18,33 @@ export default function Navbar() {
     }`;
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 shadow-md">
-      {/* Navbar container */}
-      <div className="bg-gray-900/95 backdrop-blur-lg">
-        <div className="max-w-7xl mx-auto flex items-center justify-between p-4">
-          {/* Logo */}
-          <Link
-            to="/"
-            className="text-2xl font-extrabold text-white hover:text-indigo-400 transition-colors"
-          >
-            🎬 OMDb Search
-          </Link>
+    <nav className="fixed top-0 left-0 right-0 z-50 shadow-md bg-gray-900/95 backdrop-blur-lg">
+      <div className="max-w-7xl mx-auto flex items-center justify-between p-4">
+        <Link
+          to="/"
+          className="text-2xl font-extrabold text-white hover:text-indigo-400 transition-colors"
+        >
+          🎬 OMDb Search
+        </Link>
 
-          {/* Desktop Links */}
-          <div className="hidden md:flex md:items-center md:space-x-6">
-            <NavLink to="/" className={linkClass}>
-              Home
-            </NavLink>
-            <NavLink to="/favorites" className={linkClass}>
-              Favorites
-            </NavLink>
-          </div>
-
-          {/* Mobile toggle */}
-          <button
-            className="md:hidden text-gray-200 focus:outline-none"
-            onClick={() => setOpen((v) => !v)}
-            aria-label="Toggle menu"
-          >
-            {open ? <X size={28} /> : <Menu size={28} />}
-          </button>
+        {/* Desktop links */}
+        <div className="hidden md:flex md:items-center md:space-x-6">
+          <NavLink to="/" className={linkClass}>
+            Home
+          </NavLink>
+          <NavLink to="/favorites" className={linkClass}>
+            Favorites
+          </NavLink>
         </div>
+
+        {/* Mobile toggle */}
+        <button
+          className="md:hidden text-gray-200 focus:outline-none"
+          onClick={() => setOpen((v) => !v)}
+          aria-label="Toggle menu"
+        >
+          {open ? <X size={28} /> : <Menu size={28} />}
+        </button>
       </div>
 
       {/* Mobile overlay */}
@@ -60,7 +55,7 @@ export default function Navbar() {
         onClick={() => setOpen(false)}
       ></div>
 
-      {/* Mobile dropdown */}
+      {/* Mobile menu */}
       <div
         className={`md:hidden fixed top-0 left-0 right-0 bg-gray-900/95 backdrop-blur-lg z-50 overflow-hidden transition-transform duration-300 ${
           open ? "translate-y-0" : "-translate-y-full"

@@ -9,8 +9,6 @@ export default function SearchBar({ onSearch, initial = "" }) {
 
   useEffect(() => {
     const trimmed = debouncedQuery.trim();
-
-    // Trigger search if changed or cleared
     if (trimmed !== lastSearch) {
       onSearch(trimmed);
       setLastSearch(trimmed);
@@ -20,7 +18,6 @@ export default function SearchBar({ onSearch, initial = "" }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     const trimmed = query.trim();
-
     if (trimmed !== lastSearch) {
       onSearch(trimmed);
       setLastSearch(trimmed);
@@ -49,7 +46,6 @@ export default function SearchBar({ onSearch, initial = "" }) {
                      focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
         />
       </div>
-
       <button
         type="submit"
         className="w-full sm:w-auto px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg 
