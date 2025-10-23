@@ -1,21 +1,37 @@
-import { useState, useEffect } from "react";
-import { ChevronUp } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { ArrowUp } from "lucide-react";
+import { motion as Motion } from "framer-motion";
 
 export default function ScrollTop() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => setVisible(window.scrollY > 300);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    const toggleVisibility = () => {
+      if (window.scrollY > 400) {
+        setVisible(true);
+      } else {
+        setVisible(false);
+      }
+    };
+
+    window.addEventListener("scroll", toggleVisibility);
+    return () => window.removeEventListener("scroll", toggleVisibility);
   }, []);
 
-  return visible ? (
-    <button
-      onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-      className="fixed bottom-6 right-6 p-3 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-500 transition"
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  return (
+    <Motion.button
+      initial={{ opacity: 0, scale: 0 }}
+      animate={visible ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0 }}
+      transition={{ duration: 0.3 }}
+      onClick={scrollToTop}
+      aria-label="Back to top"
+      className="fixed bottom-6 right-6 bg-indigo-600 hover:bg-indigo-500 text-white p-3 rounded-full shadow-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-400"
     >
-      <ChevronUp size={24} />
-    </button>
-  ) : null;
+      <ArrowUp size={22} />
+    </Motion.button>
+  );
 }

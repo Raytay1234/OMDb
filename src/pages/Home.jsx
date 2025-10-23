@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import MovieCard from "../components/MovieCard";
+import ScrollTop from "../components/ScrollTop";
 
 const API_KEY = "fa6f055c70ebe532bb30eceda30c7ade";
 
@@ -10,15 +11,13 @@ export default function Home() {
   const [selectedGenre, setSelectedGenre] = useState("");
   const [sortType, setSortType] = useState("");
   const [loading, setLoading] = useState(false);
-  const [userRatings, setUserRatings] = useState(() => {
-    const saved = localStorage.getItem("userRatings");
-    return saved ? JSON.parse(saved) : {};
-  });
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
 
-  // Fetch genres and trending
+  // Fetch genres and trending movies initially
   useEffect(() => {
     fetchGenres();
-    fetchTrending();
+    fetchTrending(1, true);
   }, []);
 
   const fetchGenres = async () => {
@@ -33,14 +32,16 @@ export default function Home() {
     }
   };
 
-  const fetchTrending = async () => {
+  const fetchTrending = async (pageNumber = 1, reset = false) => {
     setLoading(true);
     try {
       const res = await fetch(
-        `https://api.themoviedb.org/3/trending/movie/week?api_key=${API_KEY}`
+        `https://api.themoviedb.org/3/trending/movie/week?api_key=${API_KEY}&page=${pageNumber}`
       );
       const data = await res.json();
-      setMovies(data.results || []);
+      if (reset) setMovies(data.results || []);
+      else setMovies((prev) => [...prev, ...(data.results || [])]);
+      setHasMore(pageNumber < data.total_pages);
     } catch (err) {
       console.error("Error fetching trending:", err);
     } finally {
@@ -48,44 +49,44 @@ export default function Home() {
     }
   };
 
-  const searchMovies = useCallback(async (searchTerm) => {
-    if (!searchTerm.trim()) return fetchTrending();
+  const searchMovies = useCallback(
+    async (searchTerm, pageNumber = 1, reset = false) => {
+      if (!searchTerm.trim()) return fetchTrending(1, true);
 
-    setLoading(true);
-    try {
-      const res = await fetch(
-        `https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(
-          searchTerm
-        )}`
-      );
-      const data = await res.json();
-      setMovies(data.results || []);
-    } catch (err) {
-      console.error("Error searching movies:", err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // Debounce search
-  useEffect(() => {
-    const delayDebounce = setTimeout(() => {
-      if (query.trim() !== "") {
-        searchMovies(query);
-      } else {
-        fetchTrending();
+      setLoading(true);
+      try {
+        const res = await fetch(
+          `https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(
+            searchTerm
+          )}&page=${pageNumber}`
+        );
+        const data = await res.json();
+        if (reset) setMovies(data.results || []);
+        else setMovies((prev) => [...prev, ...(data.results || [])]);
+        setHasMore(pageNumber < data.total_pages);
+      } catch (err) {
+        console.error("Error searching movies:", err);
+      } finally {
+        setLoading(false);
       }
-    }, 500);
+    },
+    []
+  );
 
-    return () => clearTimeout(delayDebounce);
+  // Handle query changes with debounce
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (query.trim() !== "") searchMovies(query, 1, true);
+      else fetchTrending(1, true);
+      setPage(1);
+    }, 500);
+    return () => clearTimeout(timeout);
   }, [query, searchMovies]);
 
-  // Apply genre filter and sorting
+  // Filter & sort
   const filteredMovies = movies
     .filter((movie) =>
-      selectedGenre
-        ? movie.genre_ids?.includes(Number(selectedGenre))
-        : true
+      selectedGenre ? movie.genre_ids?.includes(Number(selectedGenre)) : true
     )
     .sort((a, b) => {
       if (sortType === "a-z") return a.title.localeCompare(b.title);
@@ -95,11 +96,12 @@ export default function Home() {
       return 0;
     });
 
-  // Handle user rating
-  const handleRating = (movieId, rating) => {
-    const updatedRatings = { ...userRatings, [movieId]: rating };
-    setUserRatings(updatedRatings);
-    localStorage.setItem("userRatings", JSON.stringify(updatedRatings));
+  // Load more function
+  const handleLoadMore = () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    if (query.trim()) searchMovies(query, nextPage);
+    else fetchTrending(nextPage);
   };
 
   return (
@@ -144,44 +146,33 @@ export default function Home() {
       </div>
 
       {/* Movie grid */}
-      {loading ? (
+      {loading && movies.length === 0 ? (
         <p className="text-gray-400 text-center">Loading...</p>
       ) : filteredMovies.length === 0 ? (
         <p className="text-gray-400 text-center">No movies found.</p>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
-          {filteredMovies.map((movie) => (
-            <div key={movie.id} className="relative">
-              <MovieCard movie={movie} />
+        <>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
+            {filteredMovies.map((movie) => (
+              <MovieCard key={movie.id} movie={movie} />
+            ))}
+          </div>
 
-              {/* Rating section */}
-              <div className="flex justify-center mt-2">
-                {[1, 2, 3, 4, 5].map((star) => {
-                  const userRating = userRatings[movie.id] || 0;
-                  return (
-                    <span
-                      key={star}
-                      onClick={() => handleRating(movie.id, star)}
-                      className={`cursor-pointer text-xl transition-transform duration-150 ${
-                        star <= userRating
-                          ? "text-yellow-400 scale-110"
-                          : "text-gray-500 hover:text-yellow-300"
-                      }`}
-                    >
-                      ★
-                    </span>
-                  );
-                })}
-              </div>
-
-              {/* TMDB Rating */}
-              <p className="text-center text-gray-400 text-sm mt-1">
-                TMDB: ⭐ {movie.vote_average.toFixed(1)}
-              </p>
+          {/* Load More */}
+          {hasMore && (
+            <div className="flex justify-center mt-8">
+              <button
+                onClick={handleLoadMore}
+                disabled={loading}
+                className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-500 disabled:bg-gray-600 transition-transform active:scale-95 shadow-md"
+              >
+                {loading ? "Loading..." : "Load More"}
+              </button>
             </div>
-          ))}
-        </div>
+          )}
+        </>
       )}
+      <ScrollTop />
     </div>
   );
 }
