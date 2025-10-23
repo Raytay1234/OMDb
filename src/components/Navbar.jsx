@@ -1,83 +1,88 @@
-import React, { useState, useEffect } from "react";
-import { Link, NavLink, useLocation } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import React, { useState } from "react";
+import { Link, NavLink } from "react-router-dom";
+import { Heart, Home, Film, Menu, X } from "lucide-react";
 
 export default function Navbar() {
-  const [open, setOpen] = useState(false);
-  const location = useLocation();
+  const [isOpen, setIsOpen] = useState(false);
 
-  useEffect(() => {
-    setOpen(false); // Close mobile menu on route change
-  }, [location.pathname]);
-
-  const linkClass = ({ isActive }) =>
-    `block px-4 py-2 rounded-lg transition-all duration-200 font-medium ${
-      isActive
-        ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg"
-        : "text-gray-200 hover:bg-gray-700 hover:text-white hover:scale-105"
-    }`;
+  const toggleMenu = () => setIsOpen((prev) => !prev);
+  const closeMenu = () => setIsOpen(false);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 shadow-md bg-gray-900/95 backdrop-blur-lg">
-      <div className="max-w-7xl mx-auto flex items-center justify-between p-4">
+    <nav className="bg-gray-900/95 backdrop-blur-md fixed w-full top-0 left-0 z-50 shadow-lg border-b border-gray-800">
+      <div className="max-w-6xl mx-auto px-5 py-3 flex justify-between items-center">
+        {/* Logo */}
         <Link
           to="/"
-          className="text-2xl font-extrabold text-white hover:text-indigo-400 transition-colors"
+          onClick={closeMenu}
+          className="flex items-center gap-2 text-xl sm:text-2xl font-bold text-indigo-400 hover:text-indigo-300 transition-colors duration-200"
         >
-          🎬 OMDb Search
+          <Film size={24} className="text-indigo-400" />
+          <span>MovieSearch</span>
         </Link>
 
-        {/* Desktop links */}
-        <div className="hidden md:flex md:items-center md:space-x-6">
-          <NavLink to="/" className={linkClass}>
-            Home
+        {/* Desktop Nav */}
+        <div className="hidden sm:flex items-center gap-6">
+          <NavLink
+            to="/"
+            className={({ isActive }) =>
+              `flex items-center gap-1.5 text-sm sm:text-base transition-all duration-200 ${isActive
+                ? "text-indigo-400 font-semibold"
+                : "text-gray-300 hover:text-white"
+              }`
+            }
+          >
+            <Home size={18} /> <span>Home</span>
           </NavLink>
-          <NavLink to="/favorites" className={linkClass}>
-            Favorites
+
+          <NavLink
+            to="/favorites"
+            className={({ isActive }) =>
+              `flex items-center gap-1.5 text-sm sm:text-base transition-all duration-200 ${isActive
+                ? "text-indigo-400 font-semibold"
+                : "text-gray-300 hover:text-white"
+              }`
+            }
+          >
+            <Heart size={18} /> <span>Favorites</span>
           </NavLink>
         </div>
 
-        {/* Mobile toggle */}
+        {/* Mobile Menu Button */}
         <button
-          className="md:hidden text-gray-200 focus:outline-none"
-          onClick={() => setOpen((v) => !v)}
-          aria-label="Toggle menu"
+          onClick={toggleMenu}
+          className="sm:hidden text-gray-300 hover:text-white transition-colors duration-200"
         >
-          {open ? <X size={28} /> : <Menu size={28} />}
+          {isOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
       </div>
 
-      {/* Mobile overlay */}
-      <div
-        className={`fixed inset-0 z-40 bg-black/40 transition-opacity duration-300 ${
-          open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-        }`}
-        onClick={() => setOpen(false)}
-      ></div>
-
-      {/* Mobile menu */}
-      <div
-        className={`md:hidden fixed top-0 left-0 right-0 bg-gray-900/95 backdrop-blur-lg z-50 overflow-hidden transition-transform duration-300 ${
-          open ? "translate-y-0" : "-translate-y-full"
-        }`}
-      >
-        <div className="flex flex-col mt-24 space-y-4 px-6 pb-6">
+      {/* Mobile Dropdown */}
+      {isOpen && (
+        <div className="sm:hidden bg-gray-900 border-t border-gray-800 px-5 pb-4 space-y-3">
           <NavLink
             to="/"
-            className={linkClass + " text-lg text-center"}
-            onClick={() => setOpen(false)}
+            onClick={closeMenu}
+            className={({ isActive }) =>
+              `flex items-center gap-2 text-gray-300 hover:text-indigo-400 transition-all ${isActive ? "text-indigo-400 font-semibold" : ""
+              }`
+            }
           >
-            Home
+            <Home size={18} /> <span>Home</span>
           </NavLink>
+
           <NavLink
             to="/favorites"
-            className={linkClass + " text-lg text-center"}
-            onClick={() => setOpen(false)}
+            onClick={closeMenu}
+            className={({ isActive }) =>
+              `flex items-center gap-2 text-gray-300 hover:text-indigo-400 transition-all ${isActive ? "text-indigo-400 font-semibold" : ""
+              }`
+            }
           >
-            Favorites
+            <Heart size={18} /> <span>Favorites</span>
           </NavLink>
         </div>
-      </div>
+      )}
     </nav>
   );
 }

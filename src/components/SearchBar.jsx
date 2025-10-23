@@ -28,30 +28,33 @@ export default function SearchBar({ onSearch, initial = "" }) {
     <form
       onSubmit={handleSubmit}
       role="search"
-      className="flex flex-col sm:flex-row items-center gap-3 max-w-3xl mx-auto my-8 px-3"
+      className="flex flex-col sm:flex-row items-center gap-4 max-w-3xl mx-auto my-8 px-4"
     >
+      {/* Input field with icon */}
       <div className="relative flex-1 w-full">
         <Search
           size={20}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+          className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
         />
         <input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search movies by title..."
+          placeholder="Search for a movie..."
           aria-label="Search movies"
-          className="w-full pl-10 pr-4 py-3 bg-gray-900 border border-gray-700 rounded-lg 
-                     text-gray-100 placeholder-gray-500 shadow-md focus:outline-none 
-                     focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+          className="w-full pl-11 pr-4 py-3 bg-gray-900 border border-gray-700 rounded-xl text-gray-100 placeholder-gray-500 shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
         />
       </div>
+
+      {/* Submit button */}
       <button
         type="submit"
-        className="w-full sm:w-auto px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg 
-                   hover:bg-indigo-500 active:scale-95 transition-transform shadow-md"
+        className="w-full sm:w-auto px-6 py-3 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-500 active:scale-95 transition-all duration-150 shadow-md"
       >
-        Search
+        <span className="flex items-center gap-2 justify-center">
+          <Search size={18} className="sm:hidden" />
+          <span>Search</span>
+        </span>
       </button>
     </form>
   );
